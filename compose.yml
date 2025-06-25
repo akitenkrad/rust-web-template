@@ -1,0 +1,36 @@
+services:
+  instance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      network: host
+    user: app
+    ports:
+      - 8080:8080
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace
+    env_file:
+      - .env
+    entrypoint: "/app/target/release/app start-server"
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:latest
+    command: postgres -c log_destination=stderr -c log_statement=all -c log_connections=on -c log_disconnections=on
+    volumes:
+      - ./:/workspace
+    working_dir: /workspace
+    ports:
+      - ${DATABASE_PORT}:${DATABASE_PORT}
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      PGDATA: /workspace/target/pgdata
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DATABASE_USERNAME}"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s

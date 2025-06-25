@@ -1,0 +1,28 @@
+@startuml class_diagram_health_api
+
+package Internet <<Cloud>> {
+}
+
+package ApplicationLayer as AL {
+    package web_app {}
+}
+
+package MiddleLayer as ML {
+    package kernel {}
+    package registry {}
+}
+
+package DataLayer as DL {
+    package adapter {}
+}
+
+database PostgreSQL {
+    entity WebArticle
+}
+
+'Data Flow
+Internet <-down-> AL
+AL <-down-> ML
+ML <-down-> DL
+DL <-down-> PostgreSQL
+@enduml

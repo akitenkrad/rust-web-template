@@ -1,0 +1,22 @@
+@startuml
+
+hide circle
+skinparam linetype ortho
+
+!include https://raw.githubusercontent.com/kurotych/sqlant/9b19d6691b55c838b0809ed66707e61533a4c9f2/puml-lib/db_ent.puml
+
+table(_sqlx_migrations) {
+  column(version, "bigint", $pk=true, $nn=true)
+  ---
+  column(checksum, "bytea", $nn=true)
+  column(description, "text", $nn=true)
+  column(execution_time, "bigint", $nn=true)
+  column(installed_on, "timestamp with time zone", $nn=true)
+  column(success, "boolean", $nn=true)
+}
+
+
+
+
+add_legend()
+@enduml

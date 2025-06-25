@@ -1,0 +1,13 @@
+[package]
+name = "adapter"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+version.workspace = true
+
+[dependencies]
+kernel.workspace = true
+derive-new.workspace = true
+async-trait.workspace = true
+sqlx.workspace = true
+shared.workspace = true

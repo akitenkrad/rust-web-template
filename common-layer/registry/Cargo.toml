@@ -1,0 +1,11 @@
+[package]
+name = "registry"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+version.workspace = true
+
+[dependencies]
+adapter.workspace = true
+kernel.workspace = true
+mockall.workspace = true

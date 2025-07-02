@@ -1,38 +1,42 @@
 [config]
 default_to_workspace = false
 
-[env]
-env_file = ".env"
-DATABASE_USERNAME = "postgres"
-DATABASE_PASSWORD = "password"
-DATABASE_PORT = 5432
-DATABASE_NAME = "sampledb"
+[tasks.set-env]
+env_files = [".env"]
 
 [tasks.format-all]
+extend = "set-env"
 dependencies = ["sort-cargo-toml", "clippy", "reformat"]
 description = "Format all code in the project."
 
 [tasks.build-no-cache]
+extend = "set-env"
 description = "Build the project."
 script = "docker compose build --pull --no-cache --progress=plain"
 
 [tasks.compose-up-db]
+extend = "set-env"
 description = "Start the PostgreSQL database using Docker Compose."
 script = "docker compose up -d postgres"
 
 [tasks.migrate]
+extend = "set-env"
+dependencies = ["compose-up-db"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
-until sqlx migrate run --source data-layer/adapter/migrations; do
-  sleep 1
-done
+export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
+echo "DATABASE_URL: $DATABASE_URL"
+sqlx migrate run --source data-layer/adapter/migrations
 '''
 
 [tasks.migrate-revert]
+extend = "set-env"
+dependencies = ["compose-up-db"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
+export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
 migration=$(find data-layer/adapter/migrations -type f -name "*down.sql" | sort -r)
 for m in ${migration[@]}; do
   echo "Reverting migrations for $m"
@@ -43,9 +47,10 @@ done
 '''
 
 [tasks.before-build]
-run_task = [{ name = ["compose-up-db", "migrate", "compose-build"] }]
+run_task = [{ name = ["migrate"] }]
 
 [tasks.compose-build]
+extend = "set-env"
 description = "Build the project."
 script = ["docker compose build --progress=plain"]
 
@@ -59,12 +64,14 @@ description = "Reformat the code using rustfmt."
 script = "cargo fmt -- --emit files"
 
 [tasks.nextest]
+extend = "set-env"
 dependencies = ["before-build"]
 description = "Run all tests in the project."
 install_crate = "cargo-nextest"
 script = "cargo nextest run --workspace --status-level all --test-threads=1"
 
 [tasks.start-server]
+extend = "set-env"
 dependencies = ["before-build"]
 description = "Start the web application."
 script = "docker compose up -d"

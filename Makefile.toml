@@ -3,6 +3,10 @@ default_to_workspace = false
 
 [env]
 env_file = ".env"
+DATABASE_USERNAME = "postgres"
+DATABASE_PASSWORD = "password"
+DATABASE_PORT = 5432
+DATABASE_NAME = "sampledb"
 
 [tasks.format-all]
 dependencies = ["sort-cargo-toml", "clippy", "reformat"]

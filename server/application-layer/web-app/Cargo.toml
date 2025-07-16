@@ -1,13 +1,13 @@
 [package]
-name = "web-app"
 edition.workspace = true
 license.workspace = true
+name = "web-app"
 publish.workspace = true
 version.workspace = true
 
 [dependencies]
 axum.workspace = true
 registry.workspace = true
-shared.workspace = true
 serde.workspace = true
+shared.workspace = true
 tracing.workspace = true

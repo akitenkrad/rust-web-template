@@ -1,10 +1,11 @@
 [package]
-name = "kernel"
 edition.workspace = true
 license.workspace = true
+name = "registry"
 publish.workspace = true
 version.workspace = true
 
 [dependencies]
-async-trait.workspace = true
+adapter.workspace = true
+kernel.workspace = true
 mockall.workspace = true

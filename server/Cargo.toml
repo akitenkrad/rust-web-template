@@ -1,0 +1,76 @@
+[package]
+edition.workspace = true
+license.workspace = true
+name = "app"
+publish.workspace = true
+version.workspace = true
+
+[[bin]]
+name = "app"
+path = "src/bin/app.rs"
+
+[workspace]
+members = [
+  "data-layer/adapter",
+  "middle-layer/kernel",
+  "common-layer/shared",
+  "application-layer/web-app",
+  "common-layer/registry",
+]
+
+[workspace.package]
+edition = "2024"
+license = "Apache-2.0"
+publish = false
+version = "0.1.0"
+
+[workspace.dependencies]
+adapter = { path = "./data-layer/adapter" }
+anyhow = "1.0.98"
+async-trait = "0.1.88"
+axum = { version = "0.8.4", features = ["macros"] }
+axum-extra = "0.10.1"
+chrono = { version = "0.4.41", features = ["serde"] }
+clap = { version = "4.5.40", features = ["derive"] }
+derive-new = "0.7.0"
+fxhash = "0.2.1"
+indicatif = "0.17.11"
+kernel = { path = "./middle-layer/kernel" }
+mockall = "0.13.1"
+registry = { path = "./common-layer/registry" }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+shared = { path = "./common-layer/shared" }
+sqlx = { version = "0.8.6", features = [
+  "runtime-tokio",
+  "uuid",
+  "chrono",
+  "macros",
+  "postgres",
+  "migrate",
+] }
+strum = { version = "0.27.1", features = ["derive"] }
+thiserror = "2.0.12"
+tokio = { version = "1.45.1", features = ["full"] }
+tokio-test = "0.4.4"
+tower = "0.5.2"
+tower-http = { version = "0.6.6", features = ["cors", "trace"] }
+tracing = { version = "0.1.41", features = ["log"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
+uuid = { version = "1.17.0", features = ["v4", "serde"] }
+web-app = { path = "./application-layer/web-app" }
+
+[dependencies]
+adapter.workspace = true
+anyhow.workspace = true
+axum.workspace = true
+clap.workspace = true
+derive-new.workspace = true
+kernel.workspace = true
+registry.workspace = true
+shared.workspace = true
+tokio.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+web-app.workspace = true

@@ -2,7 +2,73 @@
 default_to_workspace = false
 
 [tasks.set-env]
-env_files = [".env"]
+env_files = ["./server/.env"]
+
+#====== Build Tasks ======
+[tasks.compose-up-postgres]
+extend = "set-env"
+script = '''#!/bin/bash
+docker compose up -d postgres
+s=0
+until docker compose exec postgres pg_isready; do
+  echo "Waiting for Postgres to be ready... ($s secs)"
+  sleep 3
+  s=$((s + 3))
+done
+echo "Postgres is ready!"
+'''
+
+[tasks.migrate]
+extend = "set-env"
+dependencies = ["compose-up-postgres"]
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+script = '''
+#!/bin/bash
+export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
+echo "DATABASE_URL: $DATABASE_URL"
+sqlx migrate run --source server/data-layer/adapter/migrations
+'''
+
+[tasks.migrate-revert]
+extend = "set-env"
+dependencies = ["compose-up-postgres"]
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+script = '''
+#!/bin/bash
+export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
+migration=$(find server/data-layer/adapter/migrations -type f -name "*down.sql" | sort -r)
+for m in ${migration[@]}; do
+  echo "Reverting migrations for $m"
+  until sqlx migrate revert --source server/data-layer/adapter/migrations; do
+    sleep 1
+  done
+done
+'''
+
+[tasks.sqlx-prepare]
+extend = "set-env"
+dependencies = ["migrate"]
+install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
+script = '''
+#!/bin/bash
+cd data_layer/adapter
+export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
+cargo sqlx prepare
+'''
+
+[tasks.before-build]
+run_task = [{ name = ["migrate"] }]
+
+[tasks.compose-build]
+extend = "set-env"
+description = "Build the project."
+script = ["docker compose build --progress=plain"]
+
+#====== Utility Tasks ======
+[tasks.compose]
+extend = "set-env"
+description = "Run docker compose commands."
+script = "docker compose ${@}"
 
 [tasks.format-all]
 extend = "set-env"
@@ -14,67 +80,14 @@ extend = "set-env"
 description = "Build the project."
 script = "docker compose build --pull --no-cache --progress=plain"
 
-[tasks.compose-up-db]
-extend = "set-env"
-description = "Start the PostgreSQL database using Docker Compose."
-script = "docker compose up -d postgres"
-
-[tasks.migrate]
-extend = "set-env"
-dependencies = ["compose-up-db"]
-install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
-script = '''
-#!/bin/bash
-export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
-echo "DATABASE_URL: $DATABASE_URL"
-sqlx migrate run --source data-layer/adapter/migrations
-'''
-
-[tasks.migrate-revert]
-extend = "set-env"
-dependencies = ["compose-up-db"]
-install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
-script = '''
-#!/bin/bash
-export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
-migration=$(find data-layer/adapter/migrations -type f -name "*down.sql" | sort -r)
-for m in ${migration[@]}; do
-  echo "Reverting migrations for $m"
-  until sqlx migrate revert --source data-layer/adapter/migrations; do
-    sleep 1
-  done
-done
-'''
-
-[tasks.before-build]
-run_task = [{ name = ["migrate"] }]
-
-[tasks.compose-build]
-extend = "set-env"
-description = "Build the project."
-script = ["docker compose build --progress=plain"]
-
 [tasks.sort-cargo-toml]
 description = "Sort the Cargo.toml files in the project."
 install_crate = "taplo-cli"
-script = "taplo fmt --option reorder_keys=true"
+script = "cd server && taplo fmt --option reorder_keys=true"
 
 [tasks.reformat]
 description = "Reformat the code using rustfmt."
-script = "cargo fmt -- --emit files"
-
-[tasks.nextest]
-extend = "set-env"
-dependencies = ["before-build"]
-description = "Run all tests in the project."
-install_crate = "cargo-nextest"
-script = "cargo nextest run --workspace --status-level all --test-threads=1"
-
-[tasks.start-server]
-extend = "set-env"
-dependencies = ["before-build"]
-description = "Start the web application."
-script = "docker compose up -d"
+script = "cd server && cargo fmt -- --emit files"
 
 [tasks.gen-docs]
 dependencies = ["pu2png"]
@@ -84,9 +97,25 @@ dependencies = ["compose-up-db", "migrate"]
 command = "bash"
 install_crate = { crate_name = "sqlant", binary = "sqlant", test_arg = "--help" }
 args = ["design/generate-er.sh"]
-env_files = [".env"]
+env_files = ["./server/.env"]
 
 [tasks.pu2png]
 command = "bash"
 dependencies = ["generate-er"]
 args = ["design/pu2png.sh"]
+
+
+#====== Test Tasks ======
+[tasks.nextest]
+extend = "set-env"
+dependencies = ["before-build"]
+description = "Run all tests in the project."
+install_crate = "cargo-nextest"
+script = "cd server && cargo nextest run --workspace --status-level all --test-threads=1"
+
+#====== Command Tasks ======
+[tasks.start-server]
+extend = "set-env"
+dependencies = ["before-build"]
+description = "Start the web application."
+script = "docker compose up -d"

@@ -1,13 +1,10 @@
 [package]
-name = "adapter"
 edition.workspace = true
 license.workspace = true
+name = "kernel"
 publish.workspace = true
 version.workspace = true
 
 [dependencies]
-kernel.workspace = true
-derive-new.workspace = true
 async-trait.workspace = true
-sqlx.workspace = true
-shared.workspace = true
+mockall.workspace = true

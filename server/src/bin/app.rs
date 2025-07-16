@@ -9,7 +9,7 @@ use anyhow::{Context as _, Result};
 use axum::{Router, http::Method};
 use clap::{Parser, Subcommand};
 use registry::AppRegistryImpl;
-use shared::{config::AppConfig, logger::init_logger, utils::generate_progress_bar};
+use shared::{config::AppConfig, logger::init_logger};
 use tower_http::{
     cors::{self, CorsLayer},
     trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer},
@@ -61,7 +61,7 @@ async fn bootstrap() -> Result<()> {
         .layer(cors())
         .with_state(registry);
 
-    let addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 8080);
+    let addr = SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), app_config.server.port);
     let listener = TcpListener::bind(addr).await?;
     tracing::info!("Listening on {}", addr);
     axum::serve(listener, app)

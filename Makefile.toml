@@ -2,7 +2,7 @@
 default_to_workspace = false
 
 [tasks.set-env]
-env_files = ["./server/.env"]
+env_files = ["./server/.env", "./front/.env"]
 
 #====== Build Tasks ======
 [tasks.compose-up-postgres]
@@ -24,7 +24,7 @@ dependencies = ["compose-up-postgres"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
-export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
+export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 echo "DATABASE_URL: $DATABASE_URL"
 sqlx migrate run --source server/data-layer/adapter/migrations
 '''
@@ -35,7 +35,7 @@ dependencies = ["compose-up-postgres"]
 install_crate = { crate_name = "sqlx-cli", binary = "sqlx", test_arg = "--help", version = "0.7.3" }
 script = '''
 #!/bin/bash
-export DATABASE_URL=postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@localhost:${DATABASE_PORT}/${DATABASE_NAME}
+export DATABASE_URL="postgresql://localhost:${DATABASE_PORT}/${DATABASE_NAME}?user=${DATABASE_USERNAME}&password=${DATABASE_PASSWORD}"
 migration=$(find server/data-layer/adapter/migrations -type f -name "*down.sql" | sort -r)
 for m in ${migration[@]}; do
   echo "Reverting migrations for $m"
@@ -114,7 +114,7 @@ install_crate = "cargo-nextest"
 script = "cd server && cargo nextest run --workspace --status-level all --test-threads=1"
 
 #====== Command Tasks ======
-[tasks.start-server]
+[tasks.start]
 extend = "set-env"
 dependencies = ["before-build"]
 description = "Start the web application."

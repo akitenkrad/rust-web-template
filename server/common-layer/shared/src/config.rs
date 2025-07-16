@@ -1,6 +1,7 @@
 use anyhow::Result;
 
 pub struct AppConfig {
+    pub server: ServerConfig,
     pub database: DatabaseConfig,
 }
 
@@ -13,8 +14,15 @@ impl AppConfig {
             password: std::env::var("DATABASE_PASSWORD")?,
             database: std::env::var("DATABASE_NAME")?,
         };
-        Ok(Self { database })
+        let server = ServerConfig {
+            port: std::env::var("SERVER_PORT")?.parse()?,
+        };
+        Ok(Self { database, server })
     }
+}
+
+pub struct ServerConfig {
+    pub port: u16,
 }
 
 pub struct DatabaseConfig {

@@ -14,7 +14,7 @@ members = [
   "data-layer/adapter",
   "middle-layer/kernel",
   "common-layer/shared",
-  "application-layer/web-app",
+  "application-layer/api",
   "common-layer/registry",
 ]
 
@@ -58,7 +58,7 @@ tower-http = { version = "0.6.6", features = ["cors", "trace"] }
 tracing = { version = "0.1.41", features = ["log"] }
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
 uuid = { version = "1.17.0", features = ["v4", "serde"] }
-web-app = { path = "./application-layer/web-app" }
+api = { path = "./application-layer/api" }
 
 [dependencies]
 adapter.workspace = true
@@ -73,4 +73,4 @@ tokio.workspace = true
 tower.workspace = true
 tower-http.workspace = true
 tracing.workspace = true
-web-app.workspace = true
+api.workspace = true

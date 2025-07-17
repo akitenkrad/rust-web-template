@@ -1,9 +1,10 @@
 {
   "rust-analyzer.linkedProjects": [
-    "server/application-layer/web-app/Cargo.toml",
+    "server/application-layer/api/Cargo.toml",
     "server/common-layer/registry/Cargo.toml",
     "server/common-layer/shared/Cargo.toml",
     "server/data-layer/adapter/Cargo.toml",
     "server/middle-layer/kernel/Cargo.toml",
+    "server/Cargo.toml",
   ]
 }

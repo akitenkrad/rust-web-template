@@ -6,6 +6,7 @@ use tokio::net::TcpListener;
 
 use adapter::database::connect_database_with;
 use anyhow::{Context as _, Result};
+use api::route::v1;
 use axum::{Router, http::Method};
 use clap::{Parser, Subcommand};
 use registry::AppRegistryImpl;
@@ -15,7 +16,6 @@ use tower_http::{
     trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer},
 };
 use tracing::Level;
-use web_app::route::v1;
 
 #[derive(Debug, Parser, Clone)]
 #[command(version, about, long_about = None)]
